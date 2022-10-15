@@ -1,0 +1,73 @@
+import xlwings as xw    
+import undetected_chromedriver.v2 as uc
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import pandas as pd
+
+
+def main():
+    # try:
+    wb = xw.Book.caller() 
+    sht = wb.sheets["Sheet1"]
+    username = sht.range("B1").value
+    password = sht.range("B2").value
+    B3 = sht.range("B3").value 	
+    driver = login(username, password, B3)
+    driver = navigate_to_CPSR(driver) 
+    print("Hello World!")
+    # except:
+    #     print("Error: Something went wrong")
+    #     driver.close()
+    #     driver.quit()                                          
+    # except:
+
+def open_driver(option="Yes"):
+    """
+    Opens chrome browser, sets visibility options (default is visible) and returns driver
+    """
+
+    if option == "Yes":
+        driver = uc.Chrome()
+        return driver
+    elif option == "No":
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--disable-gpu")
+        driver = uc.Chrome(options=chrome_options)
+        return driver
+
+def login(username, password):
+    """
+    Logs into internal.bciasia.com, returns logged in session
+    """
+
+    driver = open_driver()
+    driver.get("https://internal.bciasia.com/")
+    
+    WebDriverWait(driver, 20).until(EC.presence_of_element_located(
+        (By.CSS_SELECTOR,"input[name='username']")
+        )).send_keys(username)
+    driver.find_element(By.CSS_SELECTOR,"input[name='password']").send_keys(password) 
+    driver.find_element(By.XPATH,"//option[@value='4']").click()
+    driver.find_element(By.XPATH,"//option[@value='no']").click()
+    driver.find_element(By.CSS_SELECTOR,"input[value='Submit']").click()
+    return driver
+
+def navigate_to_CPSR(driver):
+    """
+    Navigates to CPSR, returns driver
+    """
+
+    driver.get(WebDriverWait(driver, 20) .until(EC.presence_of_element_located(
+        (By.XPATH,"//a[@href='../research/index.cfm']")
+        )).get_attribute("href"))
+    driver.get(WebDriverWait(driver, 20) .until(EC.presence_of_element_located(
+        (By.XPATH,"//a[normalize-space()='Customisable Project Summary Report']")
+        )).get_attribute("href"))
+    return driver
+
+if __name__ == "__main__":
+    xw.Book("linkedinscrape.xlsm").set_mock_caller()
+    main()
