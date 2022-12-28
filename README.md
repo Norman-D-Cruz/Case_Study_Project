@@ -1,2 +1,2 @@
-# Case_Study_Project
- Collaborative Project w/ co-intern
+# Intern_Project
+ Collaborative Case Study w/ co-intern
